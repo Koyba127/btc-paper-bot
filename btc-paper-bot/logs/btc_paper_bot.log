@@ -1,0 +1,129 @@
+{"event": "SMTP credentials not configured, cannot send email", "logger": "notifier.email_notifier", "level": "error", "timestamp": "2026-02-13T10:12:58.025528Z"}
+{"event": "Initializing Historical Data...", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:12:58.025528Z"}
+{"symbol": "BTC/USDT", "timeframe": "1h", "limit": 500, "event": "Fetching historical data", "logger": "data.historical", "level": "info", "timestamp": "2026-02-13T10:12:58.030530Z"}
+{"symbol": "BTC/USDT", "timeframe": "4h", "limit": 500, "event": "Fetching historical data", "logger": "data.historical", "level": "info", "timestamp": "2026-02-13T10:13:00.104351Z"}
+{"symbol": "BTC/USDT", "timeframe": "15m", "limit": 100, "event": "Fetching historical data", "logger": "data.historical", "level": "info", "timestamp": "2026-02-13T10:13:00.378616Z"}
+{"event": "SMTP credentials not configured, cannot send email", "logger": "notifier.email_notifier", "level": "error", "timestamp": "2026-02-13T10:13:23.485489Z"}
+{"event": "Initializing Historical Data...", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:13:23.486487Z"}
+{"symbol": "BTC/USDT", "timeframe": "1h", "limit": 500, "event": "Fetching historical data", "logger": "data.historical", "level": "info", "timestamp": "2026-02-13T10:13:23.491487Z"}
+{"symbol": "BTC/USDT", "timeframe": "4h", "limit": 500, "event": "Fetching historical data", "logger": "data.historical", "level": "info", "timestamp": "2026-02-13T10:13:25.303841Z"}
+{"symbol": "BTC/USDT", "timeframe": "15m", "limit": 100, "event": "Fetching historical data", "logger": "data.historical", "level": "info", "timestamp": "2026-02-13T10:13:25.806478Z"}
+{"len_1h": 500, "len_4h": 500, "event": "Data Initialized", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:13:26.327252Z"}
+{"port": 8000, "event": "Prometheus metrics started", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:13:27.613678Z"}
+Adding job tentatively -- it will be properly scheduled when the scheduler starts
+Added job "send_daily_report" to job store "default"
+Scheduler started
+{"event": "Daily Report Scheduler started (08:00 MEZ)", "logger": "notifier.daily_report", "level": "info", "timestamp": "2026-02-13T10:13:27.626724Z"}
+{"symbol": "BTC/USDT", "event": "Starting Ticker stream", "logger": "data.websocket_fetcher", "level": "info", "timestamp": "2026-02-13T10:13:27.626724Z"}
+{"symbol": "BTC/USDT", "timeframe": "15m", "event": "Starting OHLCV stream", "logger": "data.websocket_fetcher", "level": "info", "timestamp": "2026-02-13T10:13:27.626724Z"}
+{"symbol": "BTC/USDT", "timeframe": "1h", "event": "Starting OHLCV stream", "logger": "data.websocket_fetcher", "level": "info", "timestamp": "2026-02-13T10:13:27.626724Z"}
+{"symbol": "BTC/USDT", "timeframe": "4h", "event": "Starting OHLCV stream", "logger": "data.websocket_fetcher", "level": "info", "timestamp": "2026-02-13T10:13:27.626724Z"}
+{"event": "Starting Queue Processor...", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:13:27.626724Z"}
+{"event": "Signal received, stopping...", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:14:00.419295Z"}
+{"event": "Shutting down...", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:14:00.923255Z"}
+{"event": "SMTP credentials not configured, cannot send email", "logger": "notifier.email_notifier", "level": "error", "timestamp": "2026-02-13T10:14:01.548397Z"}
+Scheduler has been shut down
+{"event": "SMTP credentials not configured, cannot send email", "logger": "notifier.email_notifier", "level": "error", "timestamp": "2026-02-13T10:20:58.451160Z"}
+{"event": "Initializing Historical Data...", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:20:58.451160Z"}
+{"symbol": "BTC/USDT", "timeframe": "1h", "limit": 500, "event": "Fetching historical data", "logger": "data.historical", "level": "info", "timestamp": "2026-02-13T10:20:58.458734Z"}
+{"symbol": "BTC/USDT", "timeframe": "4h", "limit": 500, "event": "Fetching historical data", "logger": "data.historical", "level": "info", "timestamp": "2026-02-13T10:21:00.311988Z"}
+{"symbol": "BTC/USDT", "timeframe": "15m", "limit": 100, "event": "Fetching historical data", "logger": "data.historical", "level": "info", "timestamp": "2026-02-13T10:21:00.577301Z"}
+{"len_1h": 500, "len_4h": 500, "event": "Data Initialized", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:21:01.100766Z"}
+{"port": 8000, "event": "Prometheus metrics started", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:21:02.399893Z"}
+Adding job tentatively -- it will be properly scheduled when the scheduler starts
+Added job "send_daily_report" to job store "default"
+Scheduler started
+{"event": "Daily Report Scheduler started (08:00 MEZ)", "logger": "notifier.daily_report", "level": "info", "timestamp": "2026-02-13T10:21:02.404390Z"}
+{"symbol": "BTC/USDT", "event": "Starting Ticker stream", "logger": "data.websocket_fetcher", "level": "info", "timestamp": "2026-02-13T10:21:02.404390Z"}
+{"symbol": "BTC/USDT", "timeframe": "15m", "event": "Starting OHLCV stream", "logger": "data.websocket_fetcher", "level": "info", "timestamp": "2026-02-13T10:21:02.404390Z"}
+{"symbol": "BTC/USDT", "timeframe": "1h", "event": "Starting OHLCV stream", "logger": "data.websocket_fetcher", "level": "info", "timestamp": "2026-02-13T10:21:02.404390Z"}
+{"symbol": "BTC/USDT", "timeframe": "4h", "event": "Starting OHLCV stream", "logger": "data.websocket_fetcher", "level": "info", "timestamp": "2026-02-13T10:21:02.404390Z"}
+{"event": "Starting Queue Processor...", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:21:02.404390Z"}
+{"event": "Signal received, stopping...", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:21:44.005984Z"}
+{"event": "Shutting down...", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:21:44.789558Z"}
+{"event": "SMTP credentials not configured, cannot send email", "logger": "notifier.email_notifier", "level": "error", "timestamp": "2026-02-13T10:21:45.348905Z"}
+Scheduler has been shut down
+{"event": "SMTP credentials not configured, cannot send email", "logger": "notifier.email_notifier", "level": "error", "timestamp": "2026-02-13T10:21:52.130181Z"}
+{"event": "Initializing Historical Data...", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:21:52.130181Z"}
+{"symbol": "BTC/USDT", "timeframe": "1h", "limit": 500, "event": "Fetching historical data", "logger": "data.historical", "level": "info", "timestamp": "2026-02-13T10:21:52.135181Z"}
+{"symbol": "BTC/USDT", "timeframe": "4h", "limit": 500, "event": "Fetching historical data", "logger": "data.historical", "level": "info", "timestamp": "2026-02-13T10:21:53.775649Z"}
+{"symbol": "BTC/USDT", "timeframe": "15m", "limit": 100, "event": "Fetching historical data", "logger": "data.historical", "level": "info", "timestamp": "2026-02-13T10:21:54.055853Z"}
+{"len_1h": 500, "len_4h": 500, "event": "Data Initialized", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:21:54.568585Z"}
+{"port": 8000, "event": "Prometheus metrics started", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:21:55.864600Z"}
+Adding job tentatively -- it will be properly scheduled when the scheduler starts
+Added job "send_daily_report" to job store "default"
+Scheduler started
+{"event": "Daily Report Scheduler started (08:00 MEZ)", "logger": "notifier.daily_report", "level": "info", "timestamp": "2026-02-13T10:21:55.868115Z"}
+{"symbol": "BTC/USDT", "event": "Starting Ticker stream", "logger": "data.websocket_fetcher", "level": "info", "timestamp": "2026-02-13T10:21:55.868115Z"}
+{"symbol": "BTC/USDT", "timeframe": "15m", "event": "Starting OHLCV stream", "logger": "data.websocket_fetcher", "level": "info", "timestamp": "2026-02-13T10:21:55.868115Z"}
+{"symbol": "BTC/USDT", "timeframe": "1h", "event": "Starting OHLCV stream", "logger": "data.websocket_fetcher", "level": "info", "timestamp": "2026-02-13T10:21:55.868115Z"}
+{"symbol": "BTC/USDT", "timeframe": "4h", "event": "Starting OHLCV stream", "logger": "data.websocket_fetcher", "level": "info", "timestamp": "2026-02-13T10:21:55.868115Z"}
+{"event": "Starting Queue Processor...", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:21:55.868115Z"}
+{"event": "Signal received, stopping...", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:22:07.789947Z"}
+{"event": "Shutting down...", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:22:07.912843Z"}
+{"event": "SMTP credentials not configured, cannot send email", "logger": "notifier.email_notifier", "level": "error", "timestamp": "2026-02-13T10:22:08.502830Z"}
+Scheduler has been shut down
+{"error": "API key is invalid", "event": "Resend failed, trying SMTP fallback", "logger": "notifier.email_notifier", "level": "warning", "timestamp": "2026-02-13T10:23:51.639467Z"}
+{"error": "(535, '5.7.8 Username and Password not accepted. For more information, go to\\n5.7.8  https://support.google.com/mail/?p=BadCredentials a640c23a62f3a-b8fa86e6951sm71864766b.55 - gsmtp')", "event": "Failed to send email via SMTP", "logger": "notifier.email_notifier", "level": "error", "timestamp": "2026-02-13T10:23:53.072798Z"}
+{"event": "Initializing Historical Data...", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:23:53.072798Z"}
+{"symbol": "BTC/USDT", "timeframe": "1h", "limit": 500, "event": "Fetching historical data", "logger": "data.historical", "level": "info", "timestamp": "2026-02-13T10:23:53.078798Z"}
+{"symbol": "BTC/USDT", "timeframe": "4h", "limit": 500, "event": "Fetching historical data", "logger": "data.historical", "level": "info", "timestamp": "2026-02-13T10:23:55.100644Z"}
+{"symbol": "BTC/USDT", "timeframe": "15m", "limit": 100, "event": "Fetching historical data", "logger": "data.historical", "level": "info", "timestamp": "2026-02-13T10:23:55.367568Z"}
+{"len_1h": 500, "len_4h": 500, "event": "Data Initialized", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:23:55.895376Z"}
+{"port": 8000, "event": "Prometheus metrics started", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:23:57.193570Z"}
+Adding job tentatively -- it will be properly scheduled when the scheduler starts
+Added job "send_daily_report" to job store "default"
+Scheduler started
+{"event": "Daily Report Scheduler started (08:00 MEZ)", "logger": "notifier.daily_report", "level": "info", "timestamp": "2026-02-13T10:23:57.198085Z"}
+{"symbol": "BTC/USDT", "event": "Starting Ticker stream", "logger": "data.websocket_fetcher", "level": "info", "timestamp": "2026-02-13T10:23:57.198085Z"}
+{"symbol": "BTC/USDT", "timeframe": "15m", "event": "Starting OHLCV stream", "logger": "data.websocket_fetcher", "level": "info", "timestamp": "2026-02-13T10:23:57.198085Z"}
+{"symbol": "BTC/USDT", "timeframe": "1h", "event": "Starting OHLCV stream", "logger": "data.websocket_fetcher", "level": "info", "timestamp": "2026-02-13T10:23:57.199082Z"}
+{"symbol": "BTC/USDT", "timeframe": "4h", "event": "Starting OHLCV stream", "logger": "data.websocket_fetcher", "level": "info", "timestamp": "2026-02-13T10:23:57.199082Z"}
+{"event": "Starting Queue Processor...", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:23:57.199082Z"}
+{"event": "Signal received, stopping...", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:24:18.798622Z"}
+{"event": "Shutting down...", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:24:19.514525Z"}
+{"error": "API key is invalid", "event": "Resend failed, trying SMTP fallback", "logger": "notifier.email_notifier", "level": "warning", "timestamp": "2026-02-13T10:24:20.515605Z"}
+Scheduler has been shut down
+{"error": "(535, '5.7.8 Username and Password not accepted. For more information, go to\\n5.7.8  https://support.google.com/mail/?p=BadCredentials a640c23a62f3a-b8f6e957d4bsm245287766b.11 - gsmtp')", "event": "Failed to send email via SMTP", "logger": "notifier.email_notifier", "level": "error", "timestamp": "2026-02-13T10:24:21.906714Z"}
+{"error": "API key is invalid", "event": "Resend failed, trying SMTP fallback", "logger": "notifier.email_notifier", "level": "warning", "timestamp": "2026-02-13T10:25:21.809845Z"}
+{"error": "(535, '5.7.8 Username and Password not accepted. For more information, go to\\n5.7.8  https://support.google.com/mail/?p=BadCredentials a640c23a62f3a-b8f6e9e98ecsm242331566b.30 - gsmtp')", "event": "Failed to send email via SMTP", "logger": "notifier.email_notifier", "level": "error", "timestamp": "2026-02-13T10:25:23.233195Z"}
+{"event": "Initializing Historical Data...", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:25:23.233195Z"}
+{"symbol": "BTC/USDT", "timeframe": "1h", "limit": 500, "event": "Fetching historical data", "logger": "data.historical", "level": "info", "timestamp": "2026-02-13T10:25:23.239192Z"}
+{"symbol": "BTC/USDT", "timeframe": "4h", "limit": 500, "event": "Fetching historical data", "logger": "data.historical", "level": "info", "timestamp": "2026-02-13T10:25:24.840559Z"}
+{"symbol": "BTC/USDT", "timeframe": "15m", "limit": 100, "event": "Fetching historical data", "logger": "data.historical", "level": "info", "timestamp": "2026-02-13T10:25:25.332525Z"}
+{"len_1h": 500, "len_4h": 500, "event": "Data Initialized", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:25:25.852172Z"}
+{"port": 8000, "event": "Prometheus metrics started", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:25:27.130802Z"}
+Adding job tentatively -- it will be properly scheduled when the scheduler starts
+Added job "send_daily_report" to job store "default"
+Scheduler started
+{"event": "Daily Report Scheduler started (08:00 MEZ)", "logger": "notifier.daily_report", "level": "info", "timestamp": "2026-02-13T10:25:27.134808Z"}
+{"symbol": "BTC/USDT", "event": "Starting Ticker stream", "logger": "data.websocket_fetcher", "level": "info", "timestamp": "2026-02-13T10:25:27.135808Z"}
+{"symbol": "BTC/USDT", "timeframe": "15m", "event": "Starting OHLCV stream", "logger": "data.websocket_fetcher", "level": "info", "timestamp": "2026-02-13T10:25:27.135808Z"}
+{"symbol": "BTC/USDT", "timeframe": "1h", "event": "Starting OHLCV stream", "logger": "data.websocket_fetcher", "level": "info", "timestamp": "2026-02-13T10:25:27.135808Z"}
+{"symbol": "BTC/USDT", "timeframe": "4h", "event": "Starting OHLCV stream", "logger": "data.websocket_fetcher", "level": "info", "timestamp": "2026-02-13T10:25:27.135808Z"}
+{"event": "Starting Queue Processor...", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:25:27.135808Z"}
+{"event": "Signal received, stopping...", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:25:36.576994Z"}
+{"event": "Shutting down...", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:25:37.370971Z"}
+{"error": "API key is invalid", "event": "Resend failed, trying SMTP fallback", "logger": "notifier.email_notifier", "level": "warning", "timestamp": "2026-02-13T10:25:38.102651Z"}
+Scheduler has been shut down
+{"error": "(535, '5.7.8 Username and Password not accepted. For more information, go to\\n5.7.8  https://support.google.com/mail/?p=BadCredentials a640c23a62f3a-b8f6ebd9859sm251264166b.38 - gsmtp')", "event": "Failed to send email via SMTP", "logger": "notifier.email_notifier", "level": "error", "timestamp": "2026-02-13T10:25:39.506284Z"}
+{"event": "Email sent via SMTP fallback", "logger": "notifier.email_notifier", "level": "info", "timestamp": "2026-02-13T10:27:19.657642Z"}
+{"event": "Initializing Historical Data...", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:27:19.657642Z"}
+{"symbol": "BTC/USDT", "timeframe": "1h", "limit": 500, "event": "Fetching historical data", "logger": "data.historical", "level": "info", "timestamp": "2026-02-13T10:27:19.664198Z"}
+{"symbol": "BTC/USDT", "timeframe": "4h", "limit": 500, "event": "Fetching historical data", "logger": "data.historical", "level": "info", "timestamp": "2026-02-13T10:27:21.266775Z"}
+{"symbol": "BTC/USDT", "timeframe": "15m", "limit": 100, "event": "Fetching historical data", "logger": "data.historical", "level": "info", "timestamp": "2026-02-13T10:27:21.543551Z"}
+{"len_1h": 500, "len_4h": 500, "event": "Data Initialized", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:27:22.054271Z"}
+{"port": 8000, "event": "Prometheus metrics started", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:27:23.346196Z"}
+Adding job tentatively -- it will be properly scheduled when the scheduler starts
+Added job "send_daily_report" to job store "default"
+Scheduler started
+{"event": "Daily Report Scheduler started (08:00 MEZ)", "logger": "notifier.daily_report", "level": "info", "timestamp": "2026-02-13T10:27:23.351197Z"}
+{"symbol": "BTC/USDT", "event": "Starting Ticker stream", "logger": "data.websocket_fetcher", "level": "info", "timestamp": "2026-02-13T10:27:23.351197Z"}
+{"symbol": "BTC/USDT", "timeframe": "15m", "event": "Starting OHLCV stream", "logger": "data.websocket_fetcher", "level": "info", "timestamp": "2026-02-13T10:27:23.351197Z"}
+{"symbol": "BTC/USDT", "timeframe": "1h", "event": "Starting OHLCV stream", "logger": "data.websocket_fetcher", "level": "info", "timestamp": "2026-02-13T10:27:23.351197Z"}
+{"symbol": "BTC/USDT", "timeframe": "4h", "event": "Starting OHLCV stream", "logger": "data.websocket_fetcher", "level": "info", "timestamp": "2026-02-13T10:27:23.351197Z"}
+{"event": "Starting Queue Processor...", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:27:23.351197Z"}
+{"event": "Signal received, stopping...", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:27:44.026542Z"}
+{"event": "Shutting down...", "logger": "__main__", "level": "info", "timestamp": "2026-02-13T10:27:44.501463Z"}
+Scheduler has been shut down
+{"event": "Email sent via SMTP fallback", "logger": "notifier.email_notifier", "level": "info", "timestamp": "2026-02-13T10:27:47.221694Z"}

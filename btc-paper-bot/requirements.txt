@@ -1,0 +1,14 @@
+ccxt>=4.5.37
+pandas_ta
+pandas
+numpy
+python-dotenv
+pydantic-settings
+structlog
+aiosmtplib
+resend
+
+colorama
+matplotlib
+apscheduler
+prometheus-client
