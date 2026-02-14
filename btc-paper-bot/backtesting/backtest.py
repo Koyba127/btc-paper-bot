@@ -3,9 +3,8 @@ import pandas as pd
 import pandas_ta as ta
 import numpy as np
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime
 import structlog
-import matplotlib.pyplot as plt
 import os
 import sys
 
@@ -13,35 +12,40 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from config import settings
-from strategies.multi_timeframe import MultiTimeframeStrategy
+from strategies.day_trading import DayTradingStrategy
 
 log = structlog.get_logger()
 
 async def run_backtest():
-    exchange = ccxt.binance()
+    exchange = ccxt.binance({'enableRateLimit': True})
     symbol = settings.SYMBOL
-    timeframe = '1h'
-    timeframe_4h = '4h'
+    timeframe = '15m'
     
-    # Fetch 1h Data
-    since = exchange.parse8601('2025-01-01T00:00:00Z')
-    log.info("Fetching 1h data...")
+    # Fetch 15m Data (Last 60 days approx 6000 candles)
+    # 15m * 4 * 24 = 96 candles per day. 96 * 60 = 5760.
+    limit = 1000
     ohlcv = []
+    
+    # Start date: 2 months ago
+    start_time = exchange.parse8601((pd.Timestamp.now() - pd.Timedelta(days=60)).strftime('%Y-%m-%dT%H:%M:%SZ'))
+    
+    log.info("Fetching 15m data (Last 60 days)...")
+    since = start_time
     while True:
-        data = exchange.fetch_ohlcv(symbol, timeframe, since, limit=1000)
+        data = exchange.fetch_ohlcv(symbol, timeframe, since, limit=limit)
         if not data:
             break
         ohlcv.extend(data)
-        since = data[-1][0] + 3600000
-        if len(data) < 1000:
+        since = data[-1][0] + (15 * 60 * 1000) # +15m
+        if len(data) < limit:
             break
             
-    df_1h = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
-    df_1h['timestamp'] = pd.to_datetime(df_1h['timestamp'], unit='ms')
-    df_1h.set_index('timestamp', inplace=True)
+    df_15m = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+    df_15m['timestamp'] = pd.to_datetime(df_15m['timestamp'], unit='ms')
+    df_15m.set_index('timestamp', inplace=True)
     
-    # Resample to 4h
-    df_4h = df_1h.resample('4h').agg({
+    # Create 1H Dataframe (Resample)
+    df_1h = df_15m.resample('1h').agg({
         'open': 'first',
         'high': 'max',
         'low': 'min',
@@ -49,7 +53,33 @@ async def run_backtest():
         'volume': 'sum'
     }).dropna()
     
-    strategy = MultiTimeframeStrategy()
+    log.info("Data loaded", len_15m=len(df_15m), len_1h=len(df_1h))
+    
+    # Initialize Strategy
+    strategy = DayTradingStrategy()
+    
+    # Pre-calculate Indicators for Speed (Vectorized)
+    
+    # --- 1H Context ---
+    df_1h['EMA50'] = ta.ema(df_1h['close'], length=50)
+    df_1h['EMA200'] = ta.ema(df_1h['close'], length=200)
+    adx = ta.adx(df_1h['high'], df_1h['low'], df_1h['close'], length=14)
+    if adx is not None:
+        df_1h = df_1h.join(adx) # ADX_14, DMP_14, DMN_14
+    
+    # --- 15m Execution ---
+    df_15m['EMA200'] = ta.ema(df_15m['close'], length=200)
+    df_15m['RSI'] = ta.rsi(df_15m['close'], length=14)
+    df_15m['ATR'] = ta.atr(df_15m['high'], df_15m['low'], df_15m['close'], length=14)
+    
+    # Stoch RSI
+    stoch = ta.stochrsi(df_15m['close'], length=14, rsi_length=14, k=3, d=3)
+    if stoch is not None:
+        df_15m = df_15m.join(stoch)
+    
+    # Identify Col names
+    k_col = [c for c in df_15m.columns if c.startswith('STOCHRSIk')][0]
+    d_col = [c for c in df_15m.columns if c.startswith('STOCHRSId')][0]
     
     balance = settings.PAPER_TRADING_BALANCE
     position = None
@@ -57,216 +87,133 @@ async def run_backtest():
     
     log.info("Starting Backtest Loop...")
     
-    # Pre-calculate Indicators
-    # 4h
-    df_4h['EMA50'] = ta.ema(df_4h['close'], length=50)
-    df_4h['EMA200'] = ta.ema(df_4h['close'], length=200)
-    adx = ta.adx(df_4h['high'], df_4h['low'], df_4h['close'], length=14)
-    df_4h = df_4h.join(adx)
-
-    # 1h
-    df_1h['RSI'] = ta.rsi(df_1h['close'], length=14)
-    macd = ta.macd(df_1h['close'])
-    df_1h = df_1h.join(macd)
-    df_1h['VolMA20'] = ta.sma(df_1h['volume'], length=20)
-    atr = ta.atr(df_1h['high'], df_1h['low'], df_1h['close'], length=14)
-    df_1h = df_1h.join(atr) # Adds ATRe_14 usually, check col name
-
-    # Loop
-    # Start after warm up
-    start_idx = 200 # Need 200 for EMA200
-    
-    for i in range(start_idx, len(df_1h)):
-        # Simulate "Current State"
-        # We need the indicators as they were KNOWN at this time.
-        # Since we pre-calculated, df_1h.iloc[i] contains value at Close of candle i.
-        # Strategy says "Entry = 1h Close". So we trade based on row i values.
+    # Iterate through 15m candles
+    # Start after warm up (200 candles)
+    for i in range(200, len(df_15m)):
+        current_time = df_15m.index[i]
+        row_15m = df_15m.iloc[i]
+        prev_15m = df_15m.iloc[i-1]
         
-        current_time = df_1h.index[i]
+        # Get 1H Context
+        # We need the last COMPLETED 1H candle.
+        # If current time is 10:15, last completed 1H is 09:00-10:00 (timestamp 09:00, closed 10:00).
+        # floor(current_time, '1h') gives 10:00. minus 1h gives 09:00.
         
-        # Get 4h data available at this time
-        # The last closed 4h candle is the one where timestamp + 4h <= current_time
-        # Or simply, reindex/ffill.
-        # We need the row from df_4h that corresponds to the 4h period *before* or *containing*?
-        # If we are at 13:00 (1h close), the 4h candle 08:00-12:00 is closed. Can use it.
-        # The 12:00-16:00 is open.
-        # So we look for df_4h.index <= current_time - 4h? No.
-        # floor to 4h.
+        # Check alignment:
+        # 15m candle at 10:15 (closes 10:30).
+        # We know 1H close of 10:00.
+        # So look for 1H candle with timestamp 09:00.
         
-        # Simple lookup:
-        # If we are at 10:00. Last closed 4h is 08:00 (if 4h logic implies 00, 04, 08).
+        last_hour_ts = current_time.floor('1h') - pd.Timedelta(hours=1)
         
-        # Let's align indices.
-        # df_4h is indexed by start time usually?
-        # Resample default uses left label. So 08:00 row covers 08:00-12:00.
-        # At 12:00 close, 08:00 row is finished.
-        
-        # Strategy logic requires passing "df_4h". 
-        # But we can just pass the relevant slice to the strategy? No, strategy calculates indicators.
-        # But here max speed: we already calculated.
-        
-        # Re-implement Strategy logic inline for speed or Mock strategy?
-        # Let's stick to reading the pre-calc values.
-        
-        row_1h = df_1h.iloc[i]
-        
-        # Find relevant 4h row
-        # Time of 1h close = current_time (if index is close time? CCXT index is Open Time).
-        # So row i is candle starting at T. Closes at T+1h.
-        # We trade at T+1h? Or at Open of T+1?
-        # "Entry-Preis = aktueller Close des 1h-Candles".
-        # So at end of candle i.
-        
-        # 4h alignment:
-        # If 1h candle is 11:00-12:00.
-        # 4h candle 08:00-12:00 closes at 12:00.
-        # So at 12:00 we have a fresh 4h close.
-        # If 1h candle is 10:00-11:00. 4h candle 08:00-12:00 is still open.
-        # We must use previous 4h (04:00-08:00).
-        
-        # 4h index to use: floor(current_time) - 4h if not exact match?
-        # Actually simplest is `asof`.
-        # But we need "closed" 4h.
-        # If `current_time` (open) is 11:00. Close is 12:00.
-        # At 12:00, 08:00 candle closes.
-        # So we want 4h candle starting at 08:00.
-        
-        # If `current_time` (open) is 10:00. Close is 11:00.
-        # At 11:00, 08:00 candle is OPEN.
-        # We want 4h candle starting at 04:00.
-        
-        # Logic: last_closed_4h_idx = (current_time + 1h) floor 4h - 4h.
-        
-        close_time = current_time + pd.Timedelta(hours=1)
-        # Round close_time down to 4h
-        floored_4h = close_time.floor('4h')
-        
-        # If close_time is exactly on 4h boundary (e.g. 12:00), then 08:00-12:00 is closed.
-        # Start time of that candle is 08:00. which is 12:00 - 4h.
-        if close_time == floored_4h:
-             target_4h_start = close_time - pd.Timedelta(hours=4)
-        else:
-             # Candle 08:00-12:00. We are at 11:00. Close time 12:00. 
-             # Wait, if we are at 10:00 (Open). Close 11:00.
-             # 11:00 floor 4h is 08:00.
-             # 08:00 candle is OPEN.
-             # We need 04:00 candle. (08:00 - 4h).
-             target_4h_start = floored_4h - pd.Timedelta(hours=4)
-             
-        if target_4h_start not in df_4h.index:
+        if last_hour_ts not in df_1h.index:
             continue
             
-        row_4h = df_4h.loc[target_4h_start]
+        row_1h = df_1h.loc[last_hour_ts]
         
-        # Logic Check
-        # Trend
-        trend_long = (row_4h['EMA50'] > row_4h['EMA200']) and (row_4h['ADX_14'] > 22)
-        trend_short = (row_4h['EMA50'] < row_4h['EMA200']) and (row_4h['ADX_14'] > 22)
-        
-        # Momentum
-        # Prev values
-        if i == 0: continue
-        prev_row_1h = df_1h.iloc[i-1]
-        
-        # Vol
-        vol_ok = row_1h['volume'] > row_1h['VolMA20']
-        
-        # Long
-        rsi_long = (30 <= row_1h['RSI'] <= 40)
-        # MACD lines: MACD_12_26_9, MACDh..., MACDs...
-        # Bull Cross Check
-        macd_long = (row_1h['MACDh_12_26_9'] > 0) and (prev_row_1h['MACDh_12_26_9'] <= 0)
-        
-        # Short
-        rsi_short = (60 <= row_1h['RSI'] <= 70)
-        macd_short = (row_1h['MACDh_12_26_9'] < 0) and (prev_row_1h['MACDh_12_26_9'] >= 0)
-        
-        current_price = row_1h['close']
-        current_atr = row_1h['ATRr_14'] if 'ATRr_14' in row_1h else row_1h.get('ATR_14', 0)
-        
-        # Check Exits if Position Open
+        # Check Exits
         if position:
-            # Check SL/TP against High/Low of THIS candle?
-            # Or assume we held through?
-            # "Interner Paper-Trading-Engine... prüft bei jedem Preis-Update".
-            # Backtest approximation: Check Low/High.
-            
-            # Simple assumption: If Low < SL -> Stopped. If High > TP -> Profit.
-            # If both, assume SL first (conservative) unless Open is closer to TP?
-            # Or assume worst case.
-            
+            # Check vs High/Low
             pnl = 0
             closed = False
             reason = ""
             
             if position['side'] == 'LONG':
-                if row_1h['low'] <= position['sl']:
+                if row_15m['low'] <= position['sl']:
                     pnl = (position['sl'] - position['entry']) * position['size']
-                    closed = True
-                    reason = "SL"
-                elif row_1h['high'] >= position['tp']:
+                    closed = True; reason = "SL"
+                elif row_15m['high'] >= position['tp']:
                     pnl = (position['tp'] - position['entry']) * position['size']
-                    closed = True
-                    reason = "TP"
-            else:
-                if row_1h['high'] >= position['sl']:
+                    closed = True; reason = "TP"
+            else: # SHORT
+                if row_15m['high'] >= position['sl']:
                     pnl = (position['entry'] - position['sl']) * position['size']
-                    closed = True
-                    reason = "SL"
-                elif row_1h['low'] <= position['tp']:
+                    closed = True; reason = "SL"
+                elif row_15m['low'] <= position['tp']:
                     pnl = (position['entry'] - position['tp']) * position['size']
-                    closed = True
-                    reason = "TP"
-            
+                    closed = True; reason = "TP"
+                    
             if closed:
+                # Fee
+                fee = (position['entry'] * position['size'] + (position['entry'] + pnl/position['size']) * position['size']) * 0.0004
+                pnl -= fee
                 balance += pnl
-                trades.append({'pnl': pnl, 'reason': reason, 'balance': balance})
+                trades.append({'time': current_time, 'pnl': pnl, 'reason': reason, 'balance': balance})
                 position = None
+                continue # Don't re-enter same bar
                 
-        # Check Entry if No Position
+        # Check Entries
         if not position:
-            signal = None
-            if trend_long and rsi_long and macd_long and vol_ok:
-                log.info(f"Long Signal at {current_time}", price=current_price)
-                sl = current_price - (current_atr * 1.5)
-                risk = current_price - sl
-                tp = current_price + (risk * 2.8)
-                signal = {'side': 'LONG', 'price': current_price, 'sl': sl, 'tp': tp}
-                
-            elif trend_short and rsi_short and macd_short and vol_ok:
-                log.info(f"Short Signal at {current_time}", price=current_price)
-                sl = current_price + (current_atr * 1.5)
-                risk = sl - current_price
-                tp = current_price - (risk * 2.8)
-                signal = {'side': 'SHORT', 'price': current_price, 'sl': sl, 'tp': tp}
+            # Replicating Strategy Logic
+            # Trend + Chop Filter (ADX > 20)
+            adx_val = row_1h.get('ADX_14', 0) # Assumes ADX calculated in df_1h
+            trend_bullish = (row_1h['EMA50'] > row_1h['EMA200']) and (adx_val > 20)
+            trend_bearish = (row_1h['EMA50'] < row_1h['EMA200']) and (adx_val > 20)
             
+            atr_val = row_15m.get('ATR', 0)
+            if pd.isna(atr_val): continue
+            
+            signal = None
+            
+            # LONG - Strict Stoch < 20
+            stoch_k = row_15m[k_col]
+            stoch_d = row_15m[d_col]
+            prev_k = prev_15m[k_col]
+            prev_d = prev_15m[d_col]
+            
+            stoch_cross_up = (stoch_k > stoch_d) and (prev_k <= prev_d)
+            stoch_oversold = (stoch_k < 20) 
+            
+            valid_long_rsi = (row_15m['RSI'] < 60) # Room to move up
+            price_above_ema = row_15m['close'] > row_15m['EMA200']
+            
+            if trend_bullish and price_above_ema and valid_long_rsi and stoch_cross_up and stoch_oversold:
+                sl_dist = atr_val * 2.0
+                entry = row_15m['close']
+                sl = entry - sl_dist
+                risk = entry - sl
+                tp = entry + (risk * 2.0) # Aim for 2.0 RR
+                signal = {'side': 'LONG', 'entry': entry, 'sl': sl, 'tp': tp}
+                
+            # SHORT - Strict Stoch > 80
+            stoch_cross_down = (stoch_k < stoch_d) and (prev_k >= prev_d)
+            stoch_overbought = (stoch_k > 80)
+            
+            valid_short_rsi = (row_15m['RSI'] > 40)
+            price_below_ema = row_15m['close'] < row_15m['EMA200']
+            
+            if trend_bearish and price_below_ema and valid_short_rsi and stoch_cross_down and stoch_overbought:
+                sl_dist = atr_val * 2.0
+                entry = row_15m['close']
+                sl = entry + sl_dist
+                risk = sl - entry
+                tp = entry - (risk * 2.0)
+                signal = {'side': 'SHORT', 'entry': entry, 'sl': sl, 'tp': tp}
+                
             if signal:
-                risk_amt = balance * 0.0075
-                dist = abs(signal['price'] - signal['sl'])
+                risk_amt = balance * 0.01 # 1% Risk
+                dist = abs(signal['entry'] - signal['sl'])
                 if dist > 0:
                     size = risk_amt / dist
                     position = {
                         'side': signal['side'],
-                        'entry': signal['price'],
+                        'entry': signal['entry'],
                         'sl': signal['sl'],
                         'tp': signal['tp'],
                         'size': size
                     }
+                    log.info(f"Open {signal['side']} at {current_time}", price=signal['entry'])
 
     log.info("Backtest Complete", final_balance=balance, trades=len(trades))
     return trades
 
 if __name__ == "__main__":
-    trades = asyncio.run(run_backtest())
-    if trades:
-        balance = trades[-1]['balance']
-        print(f"\nBacktest Summary:\nTotal Trades: {len(trades)}\nFinal Balance: {balance:.2f} USDT")
-        df = pd.DataFrame(trades)
-        wins = df[df['pnl'] > 0]
-        losses = df[df['pnl'] <= 0]
-        win_rate = len(wins) / len(trades) if len(trades) > 0 else 0
-        print(f"Win Rate: {win_rate*100:.2f}%")
+    t = asyncio.run(run_backtest())
+    if t:
+        df = pd.DataFrame(t)
+        print(f"\nTotal Trades: {len(t)}")
+        print(f"Final Balance: {t[-1]['balance']:.2f}")
+        print(f"Win Rate: {(len(df[df['pnl']>0])/len(df))*100:.2f}%")
         print(f"Total PnL: {df['pnl'].sum():.2f}")
     else:
-        print("\nNo trades executed in backtest.")
-
+        print("No trades.")

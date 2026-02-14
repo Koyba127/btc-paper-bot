@@ -30,35 +30,30 @@ class Bot:
         
         # Data Buffers
         self.df_1h = pd.DataFrame()
-        self.df_4h = pd.DataFrame()
         self.df_15m = pd.DataFrame()
         
         self.last_ts_1h = 0
-        self.last_ts_4h = 0
 
     async def initialize_data(self):
         log.info("Initializing Historical Data...")
         hist = HistoricalFetcher(symbol=settings.SYMBOL)
         
         self.df_1h = await hist.fetch_ohlcv('1h', limit=500)
-        self.df_4h = await hist.fetch_ohlcv('4h', limit=500)
         self.df_15m = await hist.fetch_ohlcv('15m', limit=100)
         
         await hist.close()
         
-        if self.df_1h.empty or self.df_4h.empty:
+        if self.df_1h.empty or self.df_15m.empty:
             log.error("Failed to fetch historical data. Exiting.")
             sys.exit(1)
             
         # Initialize last timestamps
         if not self.df_1h.empty:
             self.last_ts_1h = self.df_1h.index[-1].timestamp() * 1000
-        if not self.df_4h.empty:
-            self.last_ts_4h = self.df_4h.index[-1].timestamp() * 1000
             
         log.info("Data Initialized", 
                  len_1h=len(self.df_1h), 
-                 len_4h=len(self.df_4h))
+                 len_15m=len(self.df_15m))
 
     def update_buffer(self, df: pd.DataFrame, candle: list) -> pd.DataFrame:
         ts = pd.to_datetime(candle[0], unit='ms')
@@ -101,19 +96,9 @@ class Bot:
                         if tf == '1h':
                             self.df_1h = self.update_buffer(self.df_1h, candle)
                             if ts > self.last_ts_1h:
-                                # New candle started, implies previous closed? 
-                                # No, ccxt sends the opening candle usually.
-                                # If we see a new timestamp, it means the prev one is done.
                                 self.last_ts_1h = ts
-                        elif tf == '4h':
-                            self.df_4h = self.update_buffer(self.df_4h, candle)
-                            if ts > self.last_ts_4h:
-                                self.last_ts_4h = ts
                         elif tf == '15m':
                             self.df_15m = self.update_buffer(self.df_15m, candle)
-                            # On 15m update, triggered check
-                            # Check logic: Are dataframes ready?
-                            pass
 
                     # Trigger Strategy Check on every OHLCV update or specifically 15m?
                     # Strategy relies on LATEST CLOSED candles.
@@ -132,7 +117,9 @@ class Bot:
                     # I will call strategy on every 15m update, but let strategy handle logic or accept developing values.
                     # The user prompt: "Entry-Preis = aktueller Close des 1h-Candles".
                     
-                    await engine.process_ohlcv(self.df_1h, self.df_4h)
+                    # Day Trading Strategy: Signal check on 15m or 1h updates.
+                    # We pass the buffers: df_15m (Primary/Trigger) and df_1h (Trend)
+                    await engine.process_ohlcv(self.df_15m, self.df_1h)
                     
             except Exception as e:
                 log.error("Error in loop", error=str(e))
@@ -156,7 +143,6 @@ class Bot:
             asyncio.create_task(self.ws_fetcher.stream_ticker(self.queue)),
             asyncio.create_task(self.ws_fetcher.stream_ohlcv('15m', self.queue)),
             asyncio.create_task(self.ws_fetcher.stream_ohlcv('1h', self.queue)),
-            asyncio.create_task(self.ws_fetcher.stream_ohlcv('4h', self.queue)),
             asyncio.create_task(self.process_queue())
         ]
         

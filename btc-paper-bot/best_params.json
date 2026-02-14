@@ -1,0 +1,15 @@
+{
+  "params": {
+    "adx_threshold": 22,
+    "stoch_oversold": 15,
+    "stoch_overbought": 85,
+    "risk_reward_ratio": 3.0,
+    "sl_atr_multiplier": 1.5,
+    "rsi_long_max": 60,
+    "rsi_short_min": 40
+  },
+  "performance": {
+    "win_rate": 43.13725490196079,
+    "total_pnl": 3149.5968978271426,
+    "profit_factor": 1.824115781979046,
+    "total_trades": 

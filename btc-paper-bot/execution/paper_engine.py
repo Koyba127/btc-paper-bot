@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from config import settings
 from utils.logger import logger
 from utils.helpers import format_balance, format_pct
-from strategies.multi_timeframe import MultiTimeframeStrategy, Signal
+from strategies.day_trading import DayTradingStrategy, Signal
 from notifier.email_notifier import notifier
 from monitoring import metrics
 import pandas as pd
@@ -34,11 +34,12 @@ class Position(BaseModel):
 
 class PaperEngine:
     def __init__(self):
-        self.strategy = MultiTimeframeStrategy()
+        self.strategy = DayTradingStrategy()
         self.balance = settings.PAPER_TRADING_BALANCE
         self.position: Optional[Position] = None
         self.load_state()
         self.lock = asyncio.Lock()
+        self.last_signal_timestamp = None
         metrics.BALANCE.set(self.balance)
         if self.position:
             metrics.POSITION_SIZE.set(self.position.size)
@@ -193,14 +194,19 @@ class PaperEngine:
         """
         await notifier.send_email(f"Trade Closed: {reason} {pos.pnl:.2f}", msg)
 
-    async def process_ohlcv(self, df_1h: pd.DataFrame, df_4h: pd.DataFrame):
-        """Strategy Check on new Candle."""
+    async def process_ohlcv(self, df_15m: pd.DataFrame, df_1h: pd.DataFrame):
+        """Strategy Check on new Candle (15m or 1h update)."""
         if self.position:
             return  # Max 1 position
 
-        signal = self.strategy.analyze(df_1h, df_4h)
+        signal = self.strategy.analyze(df_15m, df_1h)
         if signal:
+            # Prevent duplicate signals on same timestamp
+            if self.last_signal_timestamp == signal.timestamp:
+                return
+            
             await self.open_position(signal)
+            self.last_signal_timestamp = signal.timestamp
 
     async def open_position(self, signal: Signal):
         async with self.lock:

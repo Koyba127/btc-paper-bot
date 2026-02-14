@@ -40,11 +40,12 @@ class MultiTimeframeStrategy:
             return None
         df_4h = df_4h.join(adx_4h) # Adds ADX_14, DMP_14, DMN_14
 
-        latest_4h = df_4h.iloc[-1]
+        # Using iloc[-2] to ensure we analyze the last COMPLETED candle.
+        # iloc[-1] is the developing candle which has incomplete volume.
+        latest_4h = df_4h.iloc[-2]
         
         trend_long = (latest_4h['EMA50'] > latest_4h['EMA200']) and (latest_4h['ADX_14'] > 22)
-        trend_short = (latest_4h['EMA50'] < latest_4h['EMA200']) and (latest_4h['ADX_14'] > 22) # Downtrend assumption? 
-        # Strategy text: "SHORT: Alle umgekehrt" implies EMA50 < EMA200. ADX represents trend strength, so ADX > 22 is required for BOTH.
+        trend_short = (latest_4h['EMA50'] < latest_4h['EMA200']) and (latest_4h['ADX_14'] > 22)
         
         # --- 1h Momentum Analysis ---
         # RSI(14)
@@ -59,8 +60,9 @@ class MultiTimeframeStrategy:
         # Volume MA(20)
         df_1h['VolMA20'] = ta.sma(df_1h['volume'], length=20)
         
-        current_1h = df_1h.iloc[-1]
-        prev_1h = df_1h.iloc[-2]
+        # Use iloc[-2] (Completed Candle) and iloc[-3] (Previous Completed Candle)
+        current_1h = df_1h.iloc[-2]
+        prev_1h = df_1h.iloc[-3]
         
         # Conditions
         # Volume Check
